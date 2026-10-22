@@ -37,7 +37,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"DayLeft","applicationCategory":"FinanceApplication","operatingSystem":"Android, Web","description":"Daily budget tracker with UPI SMS tracking, category limits, recurring bills and savings goals. Works offline.","url":"https://abu-1221.github.io/dayleft/","downloadUrl":"https://github.com/abu-1221/dayleft/releases/latest","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"author":{"@type":"Person","name":"Abu Backer Siddique"},"inLanguage":"en-IN"}</script>
 </head>
 <body>
-<header><h1 id="ttl">DayLeft</h1><button id="th" type="button">Dark</button></header>
+<header><div><h1 id="ttl">DayLeft</h1><div class="sub" id="sub"></div></div><button id="th" class="ib" type="button" aria-label="Switch theme"></button></header>
 <main id="m">
 <section class="card" id="boot">
 <h2>DayLeft - daily budget tracker</h2>
@@ -51,7 +51,7 @@
 <noscript><p>Please turn on JavaScript to use DayLeft.</p></noscript>
 </section>
 </main>
-<nav id="nv" aria-label="Main"><button type="button" data-v="today">Today</button><button type="button" data-v="history">History</button><button type="button" data-v="add">Add</button><button type="button" data-v="insights">Insights</button><button type="button" data-v="more">More</button></nav>
+<nav id="nv" aria-label="Main"><button type="button" data-v="today"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></svg><span>Today</span></button><button type="button" data-v="history"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg><span>History</span></button><button type="button" data-v="add"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg><span>Add</span></button><button type="button" data-v="insights"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-7"/></svg><span>Insights</span></button><button type="button" data-v="more"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg><span>More</span></button></nav>
 <div id="toast" role="status" aria-live="polite"><span id="tm"></span><button id="tu" type="button">Undo</button></div>
 <script src="xlsx.js"></script>
 <script src="app.js"></script>

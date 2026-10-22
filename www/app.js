@@ -1,5 +1,5 @@
 'use strict';
-const VERSION='0.2';
+const VERSION='0.3';
 const CATS=['Food','Travel','Bills','Shopping','Health','Other'];
 const RULES=[
  ['Food',/swiggy|zomato|dominos|pizza|kfc|mcdonald|burger|cafe|restaurant|hotel|bakery|tea|coffee|juice|mess|canteen|biryani|snack|lunch|dinner|breakfast|grocer|bigbasket|blinkit|zepto|instamart|dmart|supermarket|milk|veg|fruit/i],
@@ -50,8 +50,8 @@ function vToday(){const sp=tot(td()),dl=daily(),left=dl-sp,p=dl?sp/dl*100:100,mr
  const now=new Date(),dues=S.rec.map(r=>{const due=Math.min(r.day,dimOf(now.getFullYear(),now.getMonth()));const diff=due-now.getDate();return{r,diff}}).filter(o=>o.diff>=0&&o.diff<=7).sort((a,b)=>a.diff-b.diff);
  return `<section class=card aria-label="Today"><div class=mu>Left today</div><div class="big ${left<0?'bad':''}">${inr(left)}</div>${bar(p,left<0?'r':(p>80?'w':''))}<div class=mu>Spent ${inr(sp)} of ${inr(dl)}${dl?'':' · set income in More'}</div></section>
  <section class=card><div class=stat><div><span class=mu>This month left</span><b class="${S.income-fixedTotal()-S.save-vs<0?'bad':''}">${inr(S.income-fixedTotal()-(+S.save||0)-vs)}</b></div><div><span class=mu>Streak under budget</span><b>${sk} day${sk==1?'':'s'}</b></div></div>${alerts?'<div style="margin-top:8px">'+alerts+'</div>':''}${dues.length?'<div class=mu style="margin-top:8px">Bills due: '+dues.map(o=>esc(o.r.n)+' '+inr(o.r.a)+(o.diff==0?' today':' in '+o.diff+'d')).join(', ')+'</div>':''}</section>
- <section class=card><h2>Today</h2>${vx().filter(x=>x.d==td()).reverse().map(rowHtml).join('')||'<div class=mu>Nothing yet. Tap Add.</div>'}</section>`}
-function rowHtml(x){return `<div class=row><button class=rowmain data-a=edit data-v="${x.id}"><span>${esc(x.n)}${x.src?'<span class=tag>SMS</span>':''}${x.rec?'<span class="tag b">Bill</span>':''}</span><div class=mu>${esc(x.c)} · ${esc(x.t)}</div></button><div><b>${inr(x.a)}</b><button class=x data-a=del data-v="${x.id}" aria-label="Delete ${esc(x.n)}">✕</button></div></div>`}
+ <section class=card><h2>Today</h2>${vx().filter(x=>x.d==td()).reverse().map(rowHtml).join('')||'<div class=empty><svg viewBox="0 0 24 24" aria-hidden=true><rect x=3 y=6 width=18 height=13 rx=3 /><path d="M3 10h18M7 15h3"/></svg><div>No spends yet today</div><div class=mu>Tap Add to log your first one.</div></div>'}</section>`}
+function rowHtml(x){return `<div class=row><button class=rowmain data-a=edit data-v="${x.id}"><span>${esc(x.n)}${x.src?'<span class=tag>SMS</span>':''}${x.rec?'<span class="tag b">Bill</span>':''}</span><div class=mu>${esc(x.c)} · ${esc(x.t)}</div></button><div class=rr><b>${inr(x.a)}</b><button class=x data-a=del data-v="${x.id}" aria-label="Delete ${esc(x.n)}">✕</button></div></div>`}
 function vAdd(){const e=editId?S.tx.find(x=>x.id==editId):null;
  return `<section class=card><h2>${e?'Edit expense':'Add expense'}</h2><label for=a>Amount (₹)</label><input id=a type=number inputmode=numeric min=1 placeholder="150" value="${e?e.a:''}"><label for=n>Note</label><input id=n placeholder="Lunch, auto, recharge..." maxlength=40 value="${e?esc(e.n):''}"><label for=dt>Date</label><input id=dt type=date value="${e?e.d:td()}" max="${td()}">
  <div class=chips role=group aria-label=Category>${CATS.map(c=>`<button class="chip ${c==cat?'on':''}" data-a=pick data-v="${c}" aria-pressed="${c==cat}">${c}</button>`).join('')}</div>
@@ -60,7 +60,7 @@ function vAdd(){const e=editId?S.tx.find(x=>x.id==editId):null;
 function periodTx(){const m0=monthRange(0).key,m1=monthRange(-1).key;return S.tx.filter(x=>(hp=='a'||x.d.startsWith(hp=='m'?m0:m1))&&(hc=='All'||x.c==hc)&&(!hq||(x.n+' '+x.c+' '+x.a).toLowerCase().includes(hq.toLowerCase())))}
 function histList(){const l=periodTx().sort((a,b)=>(b.d+b.t).localeCompare(a.d+a.t)),by={};l.forEach(x=>(by[x.d]=by[x.d]||[]).push(x));
  const sum=l.reduce((s,x)=>s+x.a,0);
- return `<div class=mu>${l.length} entr${l.length==1?'y':'ies'} · ${inr(sum)}</div>`+(Object.keys(by).map(d=>`<div class=dh><span>${nice(d)}</span><span>${inr(by[d].reduce((s,x)=>s+x.a,0))}</span></div>`+by[d].map(rowHtml).join('')).join('')||'<div class=mu style="padding-top:8px">No matching entries.</div>')}
+ return `<div class=mu>${l.length} entr${l.length==1?'y':'ies'} · ${inr(sum)}</div>`+(Object.keys(by).map(d=>`<div class=dh><span>${nice(d)}</span><span>${inr(by[d].reduce((s,x)=>s+x.a,0))}</span></div>`+by[d].map(rowHtml).join('')).join('')||'<div class=empty><svg viewBox="0 0 24 24" aria-hidden=true><circle cx=11 cy=11 r=6 /><path d="M20 20l-4-4"/></svg><div>No matching entries</div><div class=mu>Try another search, period or category.</div></div>')}
 function vHistory(){return `<section class=card><label for=q class=sr>Search</label><input id=q type=search placeholder="Search note, category or amount" value="${esc(hq)}" autocomplete=off>
  <div class=chips role=group aria-label=Period>${[['m','This month'],['l','Last month'],['a','All']].map(([k,t])=>`<button class="chip ${hp==k?'on':''}" data-a=hp data-v=${k}>${t}</button>`).join('')}</div>
  <div class=chips role=group aria-label="Category filter">${['All',...CATS].map(c=>`<button class="chip ${hc==c?'on':''}" data-a=hc data-v="${c}">${c}</button>`).join('')}</div>
@@ -71,13 +71,13 @@ function insights(off){const mr=monthRange(off),cur=off==0,day=cur?new Date().ge
  const wd=[0,0,0,0,0,0,0],wn=[0,0,0,0,0,0,0];v.forEach(x=>{wd[pd(x.d).getDay()]+=x.a});for(let i=1;i<=day;i++)wn[new Date(mr.y,mr.m,i).getDay()]++;
  const wa=wd.map((s,i)=>wn[i]?s/wn[i]:0),wi=wa.indexOf(Math.max(...wa));
  let under=0;for(let i=1;i<=day;i++)if(tot(mr.key+'-'+pad(i))<=daily())under++;
- const dd=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return ymd(d)}),mx=Math.max(1,daily(),...dd.map(tot)),ly=90-daily()/mx*80;
+ const dd=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return ymd(d)}),mx=Math.max(1,daily(),...dd.map(tot)),ly=90-daily()/mx*68;
  const cm=Math.max(1,...byc.map(x=>x[1]),...CATS.map(c=>S.budgets[c]||0));
  return `<section class="card nv"><button data-a=vm data-v=-1 aria-label="Previous month">‹</button><b>${MON[mr.m]} ${mr.y}</b><button data-a=vm data-v=1 aria-label="Next month" ${off>=0?'disabled style="opacity:.3"':''}>›</button></section>
  <section class=card><div class=mu>Spent (excluding fixed bills)</div><div class=big>${inr(spent)}</div><div class=mu>${spent<=allow?'Under':'Over'} budget by ${inr(Math.abs(allow-spent))} (${inr(allow)} allowed${cur?' till today':''})</div></section>
  <section class=card><h2>Insights</h2><div class=stat><div><span class=mu>Average per day</span><b>${inr(avg)}</b></div><div><span class=mu>${cur?'Projected month':'Month total'}</span><b class="${proj>limit&&limit?'bad':''}">${inr(proj)}</b></div><div><span class=mu>Days under budget</span><b>${under} of ${day}</b></div><div><span class=mu>Fixed bills paid</span><b>${inr(fixedPaid)}</b></div></div>
  <div class=mu style="margin-top:8px">${spent?`Top category: ${top[0]} (${inr(top[1])}). Biggest: ${esc(big.n)} ${inr(big.a)}. Most spent on ${['Sundays','Mondays','Tuesdays','Wednesdays','Thursdays','Fridays','Saturdays'][wi]}.`:'No spends this month.'}${cur&&limit&&proj>limit?' At this pace you will overshoot by '+inr(proj-limit)+'.':''}</div></section>
- <section class=card><h2>Last 7 days</h2><svg viewBox="0 0 280 110" width=100% role=img aria-label="Spending in the last 7 days">${dd.map((d,i)=>{const t=tot(d),h=t/mx*80;return `<rect x="${i*40+6}" y="${90-h}" width=28 height="${h}" rx=4 fill="${t>daily()?'#c2410c':'#0f766e'}"/><text x="${i*40+20}" y=105 font-size=10 text-anchor=middle fill="currentColor">${d.slice(8)}</text>`}).join('')}<line x1=0 x2=280 y1="${ly}" y2="${ly}" stroke="currentColor" stroke-dasharray="3" opacity=".5"/></svg><div class=mu>Dashed line = daily budget</div></section>
+ <section class=card><h2>Last 7 days</h2><svg viewBox="0 0 280 110" width=100% role=img aria-label="Spending in the last 7 days">${dd.map((d,i)=>{const t=tot(d),h=t/mx*68;return `<rect class=bv x="${i*40+6}" y="${90-h}" width=28 height="${Math.max(h,t?2:0)}" rx=4 fill="${t>daily()?'#c2410c':'#0f766e'}"/>${t?`<text x="${i*40+20}" y="${86-h}" font-size=9 text-anchor=middle fill="currentColor">${t>=1000?(t/1000).toFixed(1)+'k':t}</text>`:''}<text x="${i*40+20}" y=105 font-size=10 text-anchor=middle fill="currentColor">${d.slice(8)}</text>`}).join('')}<line x1=0 x2=280 y1="${ly}" y2="${ly}" stroke="currentColor" stroke-dasharray="3" opacity=".5"/></svg><div class=mu>Dashed line = daily budget</div></section>
  <section class=card><h2>By category</h2>${byc.map(([c,s])=>{const l=S.budgets[c]||0;return `<div class=cat><span>${c}</span>${bar(s/cm*100,l&&s>l?'r':(l&&s>l*.8?'w':''))}<span>${inr(s)}${l?' / '+inr(l):''}</span></div>`}).join('')}<div class=mu>Set monthly limits in More.</div></section>`}
 const vvx=(k)=>vx().filter(x=>x.d.startsWith(k));
 function vMore(){const g=S.goal;const dis=(S.income-fixedTotal()-(+S.save||0));
@@ -94,15 +94,17 @@ function vMore(){const g=S.goal;const dis=(S.income-fixedTotal()-(+S.save||0));
 function vSetup(){return `<section class=card><h2 style="font-size:18px">Set up your budget</h2><div class=mu style="margin:4px 0 8px">Stays on this phone. Nothing is sent anywhere.</div><label for=inc>Monthly income (₹)</label><input id=inc type=number inputmode=numeric placeholder="e.g. 30000"><label for=fx>Fixed bills each month (₹)</label><input id=fx type=number inputmode=numeric placeholder="rent, EMI, recharge (0 if none)"><div class=mu id=pv style="margin-top:6px"></div><button class=cta data-a=finish>Start</button></section>`}
 function view(){const m=$('#m');let h='';$('#nv').classList.toggle('hide',tab=='setup');
  h=({setup:vSetup,today:vToday,add:vAdd,history:vHistory,insights:()=>insights(vm),more:vMore})[tab]();
- m.innerHTML=h;document.querySelectorAll('#nv button').forEach(b=>{const on=b.dataset.v==(tab=='add'||editId&&tab=='add'?'add':tab);b.classList.toggle('on',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+ document.body.classList.remove('kb');m.innerHTML=h;m.className=(tab=='history'||tab=='setup')?'one':'';m.classList.remove('enter');void m.offsetWidth;m.classList.add('enter');const sb=$('#sub');if(sb)sb.textContent=nice(td());countUp();document.querySelectorAll('#nv button').forEach(b=>{const on=b.dataset.v==(tab=='add'||editId&&tab=='add'?'add':tab);b.classList.toggle('on',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
  document.title=(tab=='setup'?'Set up':tab[0].toUpperCase()+tab.slice(1))+' · DayLeft';
  if(tab=='setup'){const u=()=>{const v=((+$('#inc').value||0)-(+$('#fx').value||0))/30;$('#pv').textContent=$('#inc').value?'Daily budget: '+inr(Math.max(0,v)):''};$('#inc').oninput=$('#fx').oninput=u}
  if(tab=='add'){const n=$('#n');n.oninput=()=>{if(!catManual){const g=guess(n.value);if(g){cat=g;chips()}}};if(!editId)setTimeout(()=>{const a=$('#a');if(a)a.focus()},50)}
  if(tab=='history'){$('#q').oninput=e=>{hq=e.target.value;$('#hl').innerHTML=histList()}}
  if(tab=='more'){$('#imp').onchange=e=>imp(e.target);if(NP)NP.checkPerms().then(r=>{const e=$('#ps');if(e)e.textContent='SMS: '+r.sms+' · Notifications: '+r.notifications}).catch(()=>{})}
  window.scrollTo(0,0)}
+function countUp(){const e=document.querySelector('.big');if(!e||window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;const txt=e.textContent,v=parseInt(txt.replace(/[^0-9]/g,''),10)||0,neg=txt.trim().startsWith('-');if(v<10)return;const t0=performance.now();(function f(t){const k=Math.min(1,(t-t0)/450),n=Math.round(v*(1-Math.pow(1-k,3)));e.textContent=(neg?'-':'')+'₹'+n.toLocaleString('en-IN');if(k<1)requestAnimationFrame(f);else e.textContent=txt})(t0)}
 function chips(){document.querySelectorAll('[data-a=pick]').forEach(b=>{const on=b.dataset.v==cat;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)})}
-function go(t){tab=t;if(t!='add'){editId=null}view()}
+function go(t,nopush){if(t!=tab&&!nopush)history.pushState({t},'');tab=t;if(t!='add'){editId=null}view()}
+window.addEventListener('popstate',e=>{const t=(e.state&&e.state.t)||'today';if(S.setup)go(t,true)});
 function addSave(){const a=Math.round(+$('#a').value);if(!(a>0)){$('#a').focus();return}const n=$('#n').value.trim()||cat,d=$('#dt').value||td(),k=n.toLowerCase();
  if(editId){const x=S.tx.find(y=>y.id==editId);if(x){if(x.c!=cat&&x.src)S.learn[(x.n||'').toLowerCase()]=cat;Object.assign(x,{a,n,c:cat,d});if(catManual&&n!=cat)S.learn[k]=cat}toast('Saved')}
  else{const t=new Date();S.tx.push({id:Date.now(),n,a,c:cat,d,t:pad(t.getHours())+':'+pad(t.getMinutes())});if(catManual&&n!=cat)S.learn[k]=cat}
@@ -154,14 +156,17 @@ function imp(i){const f=i.files[0];if(!f)return;f.text().then(t=>{try{const o=JS
 function pull(){if(!NP||!S.setup)return;NP.getPending().then(r=>{let n=0;(r.items||[]).forEach(p=>{if(!(p.a>0))return;const dup=S.tx.some(x=>x.src&&x.a==p.a&&x.n==p.n&&x.d==p.d&&x.t==p.t);if(dup)return;S.tx.push({id:Date.now()+n++,n:String(p.n||'UPI debit').slice(0,40),a:Math.round(p.a),c:guess(p.n)||'Other',d:p.d,t:p.t,src:1})});if(n){save();view();toast(n+' payment'+(n>1?'s':'')+' added from SMS')}}).catch(()=>{})}
 document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(el&&ACT[el.dataset.a]){ACT[el.dataset.a](el)}});
 $('#nv').addEventListener('click',e=>{const b=e.target.closest('button');if(b){editId=null;if(b.dataset.v=='add'){cat=cat;catManual=false}go(b.dataset.v)}});
-const sd=()=>{document.body.classList.toggle('dark',!!S.dark);$('#th').textContent=S.dark?'Light':'Dark';$('#th').setAttribute('aria-label',S.dark?'Switch to light theme':'Switch to dark theme');const m=document.querySelector('meta[name=theme-color]');if(m)m.content=S.dark?'#0e1411':'#0f766e'};
-$('#th').onclick=()=>{S.dark=!S.dark;try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}sd()};
+const SUN='<svg viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round aria-hidden=true><circle cx=12 cy=12 r=4 /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',MOON='<svg viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>';
+const sd=()=>{document.body.classList.toggle('dark',!!S.dark);$('#th').innerHTML=S.dark?SUN:MOON;$('#th').setAttribute('aria-label',S.dark?'Switch to light theme':'Switch to dark theme');const m=document.querySelector('meta[name=theme-color]');if(m)m.content=S.dark?'#0e1411':'#0f766e'};
+$('#th').onclick=()=>{S.dark=!S.dark;S.themeSet=true;try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}sd()};
 const P=new URLSearchParams(location.search);
 if(P.has('demo')&&!S.setup){S=Object.assign({},DEF,{setup:true,income:45000,fixed:3000,save:3000,dark:false,budgets:{Food:5000,Travel:2000,Shopping:2500},rec:[{n:'Rent',a:8000,day:1,c:'Bills',last:''},{n:'Wi-Fi',a:600,day:27,c:'Bills',last:''}],goal:{name:'New laptop',target:40000,saved:12000}});
  const r=[['Tea',20,0],['Auto',60,1],['Lunch',140,0],['Recharge',299,2],['Snacks',80,0],['Medicine',120,4]];r.forEach(([n,a,c],i)=>S.tx.push({id:i,n,a,c:CATS[c],d:td(),t:pad(8+i)+':15'}));
  [['Groceries',900,0],['Shirt',1200,3],['Petrol',500,1],['Dinner',450,0],['Bus pass',350,1],['Mess',1100,0],['Zomato',380,0],['Amazon',699,3]].forEach(([n,a,c],i)=>{const d=new Date();d.setDate(d.getDate()-1-i);S.tx.push({id:20+i,n,a,c:CATS[c],d:ymd(d),t:'20:00',src:i==6?1:undefined})})}
 if(!S.setup)tab='setup';else if(P.get('tab'))tab=P.get('tab');
-if(P.has('dark'))S.dark=true;if(P.has('edit')&&S.tx.length){const x=S.tx[S.tx.length-1];editId=x.id;cat=x.c}
-sd();runRecurring();view();sync();pull();
+if(P.has('edit')&&S.tx.length){const x=S.tx[S.tx.length-1];editId=x.id;cat=x.c}
+if(!S.themeSet)S.dark=!!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);if(P.has('dark'))S.dark=true;if(P.has('light'))S.dark=false;sd();history.replaceState({t:tab},'');runRecurring();view();sync();pull();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){runRecurring();pull();if(tab=='today')view()}});
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js');
+
+let H0=window.innerHeight;window.addEventListener('resize',()=>{if(window.innerHeight>H0)H0=window.innerHeight;document.body.classList.toggle('kb',window.innerHeight<H0*0.75)});

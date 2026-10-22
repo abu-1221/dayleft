@@ -2,7 +2,7 @@
 body.dark{--bg:#0e1411;--card:#18211d;--tx:#e8f0ec;--mu:#9bb0a6;--ac:#0f766e;--ac2:#14b8a6;--bad:#fb923c;--red:#f87171;--ln:#25322c;--ok:#4ade80}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 html,body{overscroll-behavior:none}
-body{font:15px/1.35 system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--tx);max-width:560px;margin:auto;min-height:100vh;padding:env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom));overflow-x:hidden}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;font:15px/1.35 system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--tx);max-width:560px;margin:auto;min-height:100vh;padding:env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom));overflow-x:hidden}
 header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px}
 h1{font-size:19px}h2{font-size:16px;margin-bottom:6px}
 button,input,select{font:inherit;color:inherit}button{border:0;background:none;cursor:pointer}
@@ -31,3 +31,42 @@ nav button{flex:1;padding:12px 0;color:var(--mu);font-size:12px}nav button.on{co
 .nv{display:flex;align-items:center;justify-content:space-between}.nv button{padding:8px 14px;font-size:18px}
 a{color:var(--ac2)}
 @media (prefers-reduced-motion:no-preference){.bar i{transition:width .2s}}
+
+input,select{-webkit-user-select:text;user-select:text;font-size:16px;min-height:46px}
+input[type=number]{-moz-appearance:textfield}input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+header{padding:16px 16px 10px}header .sub{color:var(--mu);font-size:13px;margin-top:2px}
+.ib{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--tx);background:var(--card);border:1px solid var(--ln)}
+.ib svg{width:22px;height:22px}
+.chip{min-height:40px;display:inline-flex;align-items:center}
+.x{min-width:44px;min-height:44px;display:grid;place-items:center}
+.rowmain{min-height:52px}.rowmain:active,.x:active{background:var(--bg);border-radius:10px}
+nav button{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:58px;justify-content:center;position:relative}
+nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+nav button.on::before{content:"";position:absolute;top:0;width:28px;height:3px;border-radius:0 0 3px 3px;background:var(--ac2)}
+nav button[data-v=add] svg{width:30px;height:30px;background:var(--ac);color:#fff;stroke:#fff;border-radius:50%;padding:5px}
+nav button[data-v=add].on{color:var(--ac2)}
+body.kb nav{display:none}body.kb{padding-bottom:16px}
+.big{font-variant-numeric:tabular-nums}
+.cta{min-height:48px;transition:transform .08s}.cta:active{transform:scale(.98)}
+#a{font-size:28px;font-weight:700;min-height:58px}
+.empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 8px;color:var(--mu);text-align:center}.empty svg{width:72px;height:72px;stroke:var(--ac2);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.card h2{letter-spacing:.1px}
+@media (prefers-reduced-motion:no-preference){
+ .enter>*{animation:up .28s cubic-bezier(.2,.8,.2,1) both}.enter>*:nth-child(2){animation-delay:.04s}.enter>*:nth-child(3){animation-delay:.08s}.enter>*:nth-child(4){animation-delay:.12s}.enter>*:nth-child(n+5){animation-delay:.16s}
+ @keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+ .bar i{animation:grow .6s cubic-bezier(.2,.8,.2,1)}@keyframes grow{from{width:0}}
+ svg rect.bv{transform-box:fill-box;transform-origin:bottom;animation:rise .5s cubic-bezier(.2,.8,.2,1) both}@keyframes rise{from{transform:scaleY(0)}}
+ .chip,nav button,.ib{transition:background .12s,color .12s}
+ #toast{animation:up .2s both}
+}
+@media (min-width:900px){
+ body{max-width:1040px;padding-bottom:24px;display:flex;flex-direction:column}
+ nav{position:static;order:1;margin:0 16px 14px;border:1px solid var(--ln);border-radius:14px;max-width:none;padding:0}
+ nav button{flex-direction:row;justify-content:center;gap:8px;min-height:50px;font-size:14px}nav button.on::before{top:auto;bottom:0;width:36px;height:3px;border-radius:3px 3px 0 0}
+ nav button[data-v=add] svg{width:26px;height:26px}
+ main{order:2;display:grid;grid-template-columns:1fr 1fr;align-items:start}
+ main.one{grid-template-columns:minmax(0,600px);justify-content:center}
+ .card{margin:0 16px 16px}#toast{bottom:24px}
+ .card.wide{grid-column:1/-1}
+}
+.rr{display:flex;align-items:center;gap:2px;flex:none}
