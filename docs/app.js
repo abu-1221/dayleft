@@ -1,6 +1,6 @@
 window.addEventListener('error',e=>{const b=document.getElementById('boot');if(b&&!window.__ok)b.insertAdjacentHTML('beforeend','<p style="color:#b91c1c">Error: '+String(e.message).replace(/</g,'&lt;')+'</p>')});
 'use strict';
-const VERSION='0.4.1';
+const VERSION='0.4.2';
 const CATS=['Food','Travel','Bills','Shopping','Health','Other'];
 const RULES=[
  ['Food',/swiggy|zomato|dominos|pizza|kfc|mcdonald|burger|cafe|restaurant|hotel|bakery|tea|coffee|juice|mess|canteen|biryani|snack|lunch|dinner|breakfast|grocer|bigbasket|blinkit|zepto|instamart|dmart|supermarket|milk|veg|fruit/i],
@@ -42,8 +42,9 @@ function monthRange(off){const n=new Date();const d=new Date(n.getFullYear(),n.g
 const catSpent=(key,c)=>vx().filter(x=>x.d.startsWith(key)&&x.c==c).reduce((s,x)=>s+x.a,0);
 const bar=(p,warn)=>'<div class=bar><i class="'+(warn||'')+'" style="width:'+Math.min(100,Math.max(0,p))+'%"></i></div>';
 
-let tab='today',cat='Food',catManual=false,editId=null,hq='',hc='All',hp='m',vm=0;
+let rcat='Bills',tab='today',cat='Food',catManual=false,editId=null,hq='',hc='All',hp='m',vm=0;
 const nvItems=[['today','Today'],['history','History'],['add','Add'],['insights','Insights'],['more','More']];
+function ask(msg,yes,ok,danger){const m=$('#modal');$('#mt').textContent=msg;const y=$('#my'),n=$('#mn');y.textContent=ok||'Yes';y.className='cta'+(danger?' red':'');m.style.display='flex';const c=()=>{m.style.display='none'};y.onclick=()=>{c();yes()};n.onclick=c;m.onclick=e=>{if(e.target===m)c()};y.focus()}
 function toast(msg,undo){const t=$('#toast');$('#tm').textContent=msg;t.style.display='flex';clearTimeout(t.h);t.h=setTimeout(()=>t.style.display='none',4500);const u=$('#tu');u.style.display=undo?'':'none';u.onclick=()=>{undo();t.style.display='none'}}
 
 function vToday(){const sp=tot(td()),dl=daily(),left=dl-sp,p=dl?sp/dl*100:100,mr=monthRange(0),vs=vx().filter(x=>x.d.startsWith(mr.key)).reduce((s,x)=>s+x.a,0),sk=streak();
@@ -87,12 +88,12 @@ function vMore(){const g=S.goal;const dis=(S.income-fixedTotal()-(+S.save||0));
  <section class=card><h2>Category limits (per month)</h2>${CATS.map(c=>`<div class=inl style="align-items:center"><label for="b_${c}" style="margin:0">${c}</label><input id="b_${c}" type=number inputmode=numeric placeholder="No limit" value="${S.budgets[c]||''}"></div>`).join('')}<button class=cta data-a=savelimits>Save limits</button></section>
  <section class=card><h2>Recurring bills</h2><div class=mu>Added automatically on the due day. They are part of your fixed bills, so they do not eat the daily budget.</div>${S.rec.map((r,i)=>`<div class=row><div class=rowmain>${esc(r.n)}<div class=mu>${inr(r.a)} · day ${r.day} · ${esc(r.c)}</div></div><button class=x data-a=delrec data-v=${i} aria-label="Remove ${esc(r.n)}">✕</button></div>`).join('')}
  <label for=rn>Name</label><input id=rn placeholder="Rent, Wi-Fi, EMI" maxlength=30><div class=inl><div><label for=ra>Amount</label><input id=ra type=number inputmode=numeric></div><div><label for=rd>Day (1-31)</label><input id=rd type=number inputmode=numeric min=1 max=31></div></div>
- <label for=rc>Category</label><select id=rc>${CATS.map(c=>'<option'+(c=='Bills'?' selected':'')+'>'+c+'</option>').join('')}</select><button class="cta alt" data-a=addrec>Add bill</button></section>
+ <label id=rcl>Category</label><div class=chips role=group aria-labelledby=rcl>${CATS.map(c=>`<button class="chip ${c==rcat?'on':''}" data-a=rpick data-v="${c}" aria-pressed="${c==rcat}">${c}</button>`).join('')}</div><button class="cta alt" data-a=addrec>Add bill</button></section>
  <section class=card><h2>Savings goal</h2>${g?`<div><b>${esc(g.name)}</b><div class=mu>${inr(g.saved)} of ${inr(g.target)}${(+S.save>0&&g.saved<g.target)?' · about '+Math.ceil((g.target-g.saved)/S.save)+' month(s) at '+inr(S.save)+'/month':''}</div>${bar(g.saved/g.target*100)}</div><div class=inl><input id=ga type=number inputmode=numeric placeholder="Add ₹"><button class="cta alt" style="margin:6px 0" data-a=gadd>Add savings</button></div><button class="cta red" data-a=gdel>Remove goal</button>`:`<label for=gn>Goal</label><input id=gn placeholder="New phone, laptop, trip" maxlength=30><label for=gt>Target (₹)</label><input id=gt type=number inputmode=numeric><button class=cta data-a=gset>Set goal</button>`}</section>
  <section class=card><h2>Night summary</h2><div class=mu id=nm>${NP?'Every night at 9:30 PM: spent, left, and tomorrow\'s bills. Android may move it a few minutes.':'The night notification works in the Android app. Install it from GitHub Releases.'}</div>${NP?'<button class=cta data-a=perm>Allow notifications</button><div class=mu id=ps style="margin-top:6px"></div>':''}</section>
  <section class=card><h2>Your data</h2><div class=mu>Stored only on this device.</div><button class=cta data-a=xlsx>Export Excel (.xlsx)</button><button class="cta alt" data-a=json>Backup (.json)</button><label for=imp class="cta alt" style="cursor:pointer">Restore backup</label><input id=imp type=file accept=".json,application/json" class=sr><button class="cta red" data-a=reset>Erase all data</button></section>
  <section class=card><div class=mu>DayLeft v${VERSION} · <a href="privacy.html" target=_blank rel=noopener>Privacy</a> · Free, no ads, no accounts.</div></section>`}
-function vSetup(){return `<section class=card><h2 style="font-size:18px">Set up your budget</h2><div class=mu style="margin:4px 0 8px">Stays on this phone. Nothing is sent anywhere.</div><label for=inc>Monthly income (₹)</label><input id=inc type=number inputmode=numeric placeholder="e.g. 30000"><label for=fx>Fixed bills each month (₹)</label><input id=fx type=number inputmode=numeric placeholder="rent, EMI, recharge (0 if none)"><div class=mu id=pv style="margin-top:6px"></div><button class=cta data-a=finish>Start</button></section>`}
+function vSetup(){return `<section class=card><h2 style="font-size:18px">Set up your budget</h2><div class=mu style="margin:4px 0 8px">Stays on this phone. Nothing leaves your phone.</div><label for=inc>Monthly income (₹)</label><input id=inc type=number inputmode=numeric placeholder="e.g. 30000"><label for=fx>Fixed bills each month (₹)</label><input id=fx type=number inputmode=numeric placeholder="rent, EMI, recharge (0 if none)"><div class=mu id=pv style="margin-top:6px"></div><button class=cta data-a=finish>Start</button></section>`}
 function view(){const m=$('#m');let h='';$('#nv').classList.toggle('hide',tab=='setup');
  h=({setup:vSetup,today:vToday,add:vAdd,history:vHistory,insights:()=>insights(vm),more:vMore})[tab]();
  document.body.classList.remove('kb');m.innerHTML=h;m.className=(tab=='history'||tab=='setup')?'one':'';m.classList.remove('enter');void m.offsetWidth;m.classList.add('enter');const sb=$('#sub');if(sb)sb.textContent=nice(td());countUp();document.querySelectorAll('#nv button').forEach(b=>{const on=b.dataset.v==(tab=='add'||editId&&tab=='add'?'add':tab);b.classList.toggle('on',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
@@ -123,14 +124,15 @@ const ACT={
  hp(el){hp=el.dataset.v;view()},hc(el){hc=el.dataset.v;view()},vm(el){const n=vm+Number(el.dataset.v);if(n>0)return;vm=n;view()},
  savebudget(){S.income=num('inc');S.fixed=num('fx');S.save=num('sv');save();view();toast('Saved. Daily budget '+inr(daily()))},
  savelimits(){CATS.forEach(c=>{const v=num('b_'+c);if(v)S.budgets[c]=v;else delete S.budgets[c]});save();toast('Limits saved')},
- addrec(){const n=$('#rn').value.trim(),a=num('ra'),d=Math.min(31,Math.max(1,num('rd')));if(!n||!a||!d){toast('Fill name, amount and day');return}S.rec.push({n,a,day:d,c:$('#rc').value});save();runRecurring();view();toast('Bill added')},
+ addrec(){const n=$('#rn').value.trim(),a=num('ra'),d=Math.min(31,Math.max(1,num('rd')));if(!n||!a||!d){toast('Fill name, amount and day');return}S.rec.push({n,a,day:d,c:rcat});save();runRecurring();view();toast('Bill added')},
  delrec(el){S.rec.splice(+el.dataset.v,1);save();view()},
  gset(){const n=$('#gn').value.trim(),t=num('gt');if(!n||!t){toast('Add a name and target');return}S.goal={name:n,target:t,saved:0};save();view()},
  gadd(){const a=num('ga');if(!a)return;S.goal.saved=Math.min(S.goal.target,S.goal.saved+a);save();view();toast('Saved '+inr(a)+' towards '+S.goal.name)},
- gdel(){if(confirm('Remove this goal?')){S.goal=null;save();view()}},
+ rpick(el){rcat=el.dataset.v;el.parentNode.querySelectorAll('.chip').forEach(b=>{const o=b==el;b.classList.toggle('on',o);b.setAttribute('aria-pressed',o)})},
+ gdel(){ask('Remove this goal?',()=>{S.goal=null;save();view()},'Remove',1)},
  perm(){NP.requestPerms().then(()=>view()).catch(()=>{})},
  xlsx:exportXlsx,json(){out('dayleft-backup.json',new Blob([JSON.stringify(S)],{type:'application/json'}))},
- reset(){if(confirm('Erase all data on this phone?')){S=Object.assign({},DEF,{dark:S.dark,tx:[],rec:[],budgets:{},learn:{}});save();tab='setup';view()}}
+ reset(){ask('Erase all data on this phone? This cannot be undone.',()=>{S=Object.assign({},DEF,{dark:S.dark,tx:[],rec:[],budgets:{},learn:{}});save();tab='setup';view()},'Erase',1)}
 };
 function out(name,blob){if(NP&&NP.shareFile){const r=new FileReader();r.onload=()=>NP.shareFile({name,mime:blob.type,data:String(r.result).split(',')[1]}).catch(()=>toast('Could not share the file'));r.readAsDataURL(blob);return}
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
@@ -153,7 +155,7 @@ function clean(o){const t=[];(Array.isArray(o.tx)?o.tx:[]).forEach((x,i)=>{if(x&
  const b={};CATS.forEach(c=>{if(o.budgets&&o.budgets[c]>0)b[c]=Math.round(o.budgets[c])});
  const g=o.goal&&o.goal.target>0?{name:String(o.goal.name||'Goal').slice(0,30),target:Math.round(o.goal.target),saved:Math.max(0,Math.round(o.goal.saved||0))}:null;
  return Object.assign({},DEF,{setup:true,income:Math.max(0,+o.income||0),fixed:Math.max(0,+o.fixed||0),save:Math.max(0,+o.save||0),tx:t,rec:r,budgets:b,goal:g,learn:{},dark:!!o.dark})}
-function imp(i){const f=i.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!Array.isArray(o.tx))throw 0;S=clean(o);save();go('today');toast('Backup restored')}catch(e){toast('Not a valid DayLeft backup')}})}
+function imp(i){const f=i.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!Array.isArray(o.tx))throw 0;ask('Replace everything on this phone with this backup ('+o.tx.length+(o.tx.length==1?' entry':' entries')+')?',()=>{S=clean(o);save();go('today');toast('Backup restored')},'Restore');i.value=''}catch(e){toast('Not a valid DayLeft backup')}})}
 function pull(){if(!NP||!S.setup||!NP.getShared)return;NP.getShared().then(r=>{if(!r.text)return;fillFrom(r.text,true)}).catch(()=>{})}
 function fillFrom(t,nav){const p=parseSms(t);if(!p){toast('No amount found in that text');return}if(nav){editId=null;tab='add';view()}$('#a').value=p.a;$('#n').value=p.n;cat=guess(p.n)||'Other';catManual=false;chips();toast('Check it and tap Save')}
 function pasteClip(){if(navigator.clipboard&&navigator.clipboard.readText)navigator.clipboard.readText().then(t=>{$('#sms').value=t;fillFrom(t,false)}).catch(()=>toast('Long-press the box and choose Paste'));else toast('Long-press the box and choose Paste')}
