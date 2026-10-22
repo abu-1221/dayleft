@@ -4,18 +4,14 @@ import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 @CapacitorPlugin(name = "DayLeft", permissions = {
-    @Permission(alias = "sms", strings = {Manifest.permission.RECEIVE_SMS}),
     @Permission(alias = "notifications", strings = {"android.permission.POST_NOTIFICATIONS"})
 })
 public class DayLeftPlugin extends Plugin {
@@ -36,16 +32,11 @@ public class DayLeftPlugin extends Plugin {
     }
 
     @PluginMethod
-    public void getPending(PluginCall call) {
+    public void getShared(PluginCall call) {
         SharedPreferences p = prefs(getContext());
         JSObject out = new JSObject();
-        try {
-            JSONArray arr = new JSONArray(p.getString("pending", "[]"));
-            out.put("items", new JSArray(arr.toString()));
-        } catch (Exception e) {
-            out.put("items", new JSArray());
-        }
-        p.edit().putString("pending", "[]").apply();
+        out.put("text", p.getString("shared", ""));
+        p.edit().remove("shared").apply();
         call.resolve(out);
     }
 
@@ -81,7 +72,6 @@ public class DayLeftPlugin extends Plugin {
     @PluginMethod
     public void checkPerms(PluginCall call) {
         JSObject o = new JSObject();
-        o.put("sms", state("sms"));
         o.put("notifications", state("notifications"));
         call.resolve(o);
     }
@@ -89,9 +79,9 @@ public class DayLeftPlugin extends Plugin {
     @PluginMethod
     public void requestPerms(PluginCall call) {
         if (Build.VERSION.SDK_INT >= 33) {
-            requestPermissionForAliases(new String[]{"sms", "notifications"}, call, "permsDone");
+            requestPermissionForAlias("notifications", call, "permsDone");
         } else {
-            requestPermissionForAlias("sms", call, "permsDone");
+            checkPerms(call);
         }
     }
 

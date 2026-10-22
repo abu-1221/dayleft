@@ -1,5 +1,6 @@
+window.addEventListener('error',e=>{const b=document.getElementById('boot');if(b&&!window.__ok)b.insertAdjacentHTML('beforeend','<p style="color:#b91c1c">Error: '+String(e.message).replace(/</g,'&lt;')+'</p>')});
 'use strict';
-const VERSION='0.3';
+const VERSION='0.4.1';
 const CATS=['Food','Travel','Bills','Shopping','Health','Other'];
 const RULES=[
  ['Food',/swiggy|zomato|dominos|pizza|kfc|mcdonald|burger|cafe|restaurant|hotel|bakery|tea|coffee|juice|mess|canteen|biryani|snack|lunch|dinner|breakfast|grocer|bigbasket|blinkit|zepto|instamart|dmart|supermarket|milk|veg|fruit/i],
@@ -56,7 +57,7 @@ function vAdd(){const e=editId?S.tx.find(x=>x.id==editId):null;
  return `<section class=card><h2>${e?'Edit expense':'Add expense'}</h2><label for=a>Amount (₹)</label><input id=a type=number inputmode=numeric min=1 placeholder="150" value="${e?e.a:''}"><label for=n>Note</label><input id=n placeholder="Lunch, auto, recharge..." maxlength=40 value="${e?esc(e.n):''}"><label for=dt>Date</label><input id=dt type=date value="${e?e.d:td()}" max="${td()}">
  <div class=chips role=group aria-label=Category>${CATS.map(c=>`<button class="chip ${c==cat?'on':''}" data-a=pick data-v="${c}" aria-pressed="${c==cat}">${c}</button>`).join('')}</div>
  <button class=cta data-a=addsave>${e?'Save changes':'Save'}</button>${e?'<button class="cta alt" data-a=cancel>Cancel</button><button class="cta red" data-a=del data-v="'+e.id+'">Delete</button>':''}</section>
- ${e?'':`<section class=card><h2>Paste a UPI / bank SMS</h2><div class=mu>Read on this phone only. Nothing is sent anywhere.</div><label for=sms class=sr>SMS text</label><input id=sms placeholder="Rs.250.00 debited ... to SWIGGY"><button class="cta alt" data-a=sms>Read amount</button></section>`}`}
+ ${e?'':`<section class=card><h2>Paste a UPI / bank SMS</h2><div class=mu>From the Messages app: Share > DayLeft, or copy the SMS and paste it here. Read on this phone only.</div><label for=sms class=sr>SMS text</label><input id=sms placeholder="Rs.250.00 debited ... to SWIGGY"><button class="cta alt" data-a=sms>Read amount</button><button class="cta alt" data-a=clip>Paste from clipboard</button></section>`}`}
 function periodTx(){const m0=monthRange(0).key,m1=monthRange(-1).key;return S.tx.filter(x=>(hp=='a'||x.d.startsWith(hp=='m'?m0:m1))&&(hc=='All'||x.c==hc)&&(!hq||(x.n+' '+x.c+' '+x.a).toLowerCase().includes(hq.toLowerCase())))}
 function histList(){const l=periodTx().sort((a,b)=>(b.d+b.t).localeCompare(a.d+a.t)),by={};l.forEach(x=>(by[x.d]=by[x.d]||[]).push(x));
  const sum=l.reduce((s,x)=>s+x.a,0);
@@ -88,7 +89,7 @@ function vMore(){const g=S.goal;const dis=(S.income-fixedTotal()-(+S.save||0));
  <label for=rn>Name</label><input id=rn placeholder="Rent, Wi-Fi, EMI" maxlength=30><div class=inl><div><label for=ra>Amount</label><input id=ra type=number inputmode=numeric></div><div><label for=rd>Day (1-31)</label><input id=rd type=number inputmode=numeric min=1 max=31></div></div>
  <label for=rc>Category</label><select id=rc>${CATS.map(c=>'<option'+(c=='Bills'?' selected':'')+'>'+c+'</option>').join('')}</select><button class="cta alt" data-a=addrec>Add bill</button></section>
  <section class=card><h2>Savings goal</h2>${g?`<div><b>${esc(g.name)}</b><div class=mu>${inr(g.saved)} of ${inr(g.target)}${(+S.save>0&&g.saved<g.target)?' · about '+Math.ceil((g.target-g.saved)/S.save)+' month(s) at '+inr(S.save)+'/month':''}</div>${bar(g.saved/g.target*100)}</div><div class=inl><input id=ga type=number inputmode=numeric placeholder="Add ₹"><button class="cta alt" style="margin:6px 0" data-a=gadd>Add savings</button></div><button class="cta red" data-a=gdel>Remove goal</button>`:`<label for=gn>Goal</label><input id=gn placeholder="New phone, laptop, trip" maxlength=30><label for=gt>Target (₹)</label><input id=gt type=number inputmode=numeric><button class=cta data-a=gset>Set goal</button>`}</section>
- <section class=card><h2>Night summary</h2><div class=mu id=nm>${NP?'Every night at 9:30 PM: spent, left, and tomorrow\'s bills. Android may move it a few minutes.':'The night notification works in the Android app. Install it from GitHub Releases.'}</div>${NP?'<button class=cta data-a=perm>Allow notifications + SMS reading</button><div class=mu id=ps style="margin-top:6px"></div>':''}</section>
+ <section class=card><h2>Night summary</h2><div class=mu id=nm>${NP?'Every night at 9:30 PM: spent, left, and tomorrow\'s bills. Android may move it a few minutes.':'The night notification works in the Android app. Install it from GitHub Releases.'}</div>${NP?'<button class=cta data-a=perm>Allow notifications</button><div class=mu id=ps style="margin-top:6px"></div>':''}</section>
  <section class=card><h2>Your data</h2><div class=mu>Stored only on this device.</div><button class=cta data-a=xlsx>Export Excel (.xlsx)</button><button class="cta alt" data-a=json>Backup (.json)</button><label for=imp class="cta alt" style="cursor:pointer">Restore backup</label><input id=imp type=file accept=".json,application/json" class=sr><button class="cta red" data-a=reset>Erase all data</button></section>
  <section class=card><div class=mu>DayLeft v${VERSION} · <a href="privacy.html" target=_blank rel=noopener>Privacy</a> · Free, no ads, no accounts.</div></section>`}
 function vSetup(){return `<section class=card><h2 style="font-size:18px">Set up your budget</h2><div class=mu style="margin:4px 0 8px">Stays on this phone. Nothing is sent anywhere.</div><label for=inc>Monthly income (₹)</label><input id=inc type=number inputmode=numeric placeholder="e.g. 30000"><label for=fx>Fixed bills each month (₹)</label><input id=fx type=number inputmode=numeric placeholder="rent, EMI, recharge (0 if none)"><div class=mu id=pv style="margin-top:6px"></div><button class=cta data-a=finish>Start</button></section>`}
@@ -99,7 +100,7 @@ function view(){const m=$('#m');let h='';$('#nv').classList.toggle('hide',tab=='
  if(tab=='setup'){const u=()=>{const v=((+$('#inc').value||0)-(+$('#fx').value||0))/30;$('#pv').textContent=$('#inc').value?'Daily budget: '+inr(Math.max(0,v)):''};$('#inc').oninput=$('#fx').oninput=u}
  if(tab=='add'){const n=$('#n');n.oninput=()=>{if(!catManual){const g=guess(n.value);if(g){cat=g;chips()}}};if(!editId)setTimeout(()=>{const a=$('#a');if(a)a.focus()},50)}
  if(tab=='history'){$('#q').oninput=e=>{hq=e.target.value;$('#hl').innerHTML=histList()}}
- if(tab=='more'){$('#imp').onchange=e=>imp(e.target);if(NP)NP.checkPerms().then(r=>{const e=$('#ps');if(e)e.textContent='SMS: '+r.sms+' · Notifications: '+r.notifications}).catch(()=>{})}
+ if(tab=='more'){$('#imp').onchange=e=>imp(e.target);if(NP)NP.checkPerms().then(r=>{const e=$('#ps');if(e)e.textContent='Notifications: '+r.notifications}).catch(()=>{})}
  window.scrollTo(0,0)}
 function countUp(){const e=document.querySelector('.big');if(!e||window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;const txt=e.textContent,v=parseInt(txt.replace(/[^0-9]/g,''),10)||0,neg=txt.trim().startsWith('-');if(v<10)return;const t0=performance.now();(function f(t){const k=Math.min(1,(t-t0)/450),n=Math.round(v*(1-Math.pow(1-k,3)));e.textContent=(neg?'-':'')+'₹'+n.toLocaleString('en-IN');if(k<1)requestAnimationFrame(f);else e.textContent=txt})(t0)}
 function chips(){document.querySelectorAll('[data-a=pick]').forEach(b=>{const on=b.dataset.v==cat;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)})}
@@ -116,7 +117,7 @@ function num(id){return Math.max(0,Math.round(+$('#'+id).value||0))}
 const ACT={
  finish(){const i=num('inc');if(!i){$('#inc').focus();return}S.income=i;S.fixed=num('fx');S.setup=true;save();runRecurring();go('today');toast('Daily budget '+inr(daily()))},
  pick(el){cat=el.dataset.v;catManual=true;chips()},
- addsave:addSave,cancel(){go('history')},sms:readSms,
+ addsave:addSave,cancel(){go('history')},sms:readSms,clip:pasteClip,
  edit(el){const x=S.tx.find(y=>y.id==el.dataset.v);if(!x)return;editId=x.id;cat=x.c;catManual=false;tab='add';view()},
  del(el){del(el.dataset.v)},
  hp(el){hp=el.dataset.v;view()},hc(el){hc=el.dataset.v;view()},vm(el){const n=vm+Number(el.dataset.v);if(n>0)return;vm=n;view()},
@@ -153,7 +154,9 @@ function clean(o){const t=[];(Array.isArray(o.tx)?o.tx:[]).forEach((x,i)=>{if(x&
  const g=o.goal&&o.goal.target>0?{name:String(o.goal.name||'Goal').slice(0,30),target:Math.round(o.goal.target),saved:Math.max(0,Math.round(o.goal.saved||0))}:null;
  return Object.assign({},DEF,{setup:true,income:Math.max(0,+o.income||0),fixed:Math.max(0,+o.fixed||0),save:Math.max(0,+o.save||0),tx:t,rec:r,budgets:b,goal:g,learn:{},dark:!!o.dark})}
 function imp(i){const f=i.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!Array.isArray(o.tx))throw 0;S=clean(o);save();go('today');toast('Backup restored')}catch(e){toast('Not a valid DayLeft backup')}})}
-function pull(){if(!NP||!S.setup)return;NP.getPending().then(r=>{let n=0;(r.items||[]).forEach(p=>{if(!(p.a>0))return;const dup=S.tx.some(x=>x.src&&x.a==p.a&&x.n==p.n&&x.d==p.d&&x.t==p.t);if(dup)return;S.tx.push({id:Date.now()+n++,n:String(p.n||'UPI debit').slice(0,40),a:Math.round(p.a),c:guess(p.n)||'Other',d:p.d,t:p.t,src:1})});if(n){save();view();toast(n+' payment'+(n>1?'s':'')+' added from SMS')}}).catch(()=>{})}
+function pull(){if(!NP||!S.setup||!NP.getShared)return;NP.getShared().then(r=>{if(!r.text)return;fillFrom(r.text,true)}).catch(()=>{})}
+function fillFrom(t,nav){const p=parseSms(t);if(!p){toast('No amount found in that text');return}if(nav){editId=null;tab='add';view()}$('#a').value=p.a;$('#n').value=p.n;cat=guess(p.n)||'Other';catManual=false;chips();toast('Check it and tap Save')}
+function pasteClip(){if(navigator.clipboard&&navigator.clipboard.readText)navigator.clipboard.readText().then(t=>{$('#sms').value=t;fillFrom(t,false)}).catch(()=>toast('Long-press the box and choose Paste'));else toast('Long-press the box and choose Paste')}
 document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(el&&ACT[el.dataset.a]){ACT[el.dataset.a](el)}});
 $('#nv').addEventListener('click',e=>{const b=e.target.closest('button');if(b){editId=null;if(b.dataset.v=='add'){cat=cat;catManual=false}go(b.dataset.v)}});
 const SUN='<svg viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round aria-hidden=true><circle cx=12 cy=12 r=4 /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',MOON='<svg viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round aria-hidden=true><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>';
@@ -167,6 +170,8 @@ if(!S.setup)tab='setup';else if(P.get('tab'))tab=P.get('tab');
 if(P.has('edit')&&S.tx.length){const x=S.tx[S.tx.length-1];editId=x.id;cat=x.c}
 if(!S.themeSet)S.dark=!!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);if(P.has('dark'))S.dark=true;if(P.has('light'))S.dark=false;sd();history.replaceState({t:tab},'');runRecurring();view();sync();pull();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){runRecurring();pull();if(tab=='today')view()}});
-if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js');
+if('serviceWorker'in navigator&&location.protocol.startsWith('http')&&!window.Capacitor)navigator.serviceWorker.register('sw.js');
 
 let H0=window.innerHeight;window.addEventListener('resize',()=>{if(window.innerHeight>H0)H0=window.innerHeight;document.body.classList.toggle('kb',window.innerHeight<H0*0.75)});
+
+window.__ok=1;

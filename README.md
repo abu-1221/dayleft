@@ -4,7 +4,7 @@ Daily budget tracker. Monthly income minus fixed bills, divided by 30, is your b
 
 - Web (PWA, works offline): https://abu-1221.github.io/dayleft/
 - Android APK: see Releases. It has no internet permission, so nothing can leave the phone.
-- Android extras: 9:30 PM night summary notification, and debit SMS (UPI/bank) are read on the phone and added to Today.
+- Android extras: 9:30 PM night summary notification, bank SMS can be shared or pasted into the app, parsed on the phone.
 - Free only. No accounts, no analytics, no servers. Data stays in the app (local storage). Export/import a .json backup in Settings.
 
 ## Build

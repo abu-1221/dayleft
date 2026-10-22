@@ -41,19 +41,6 @@ public class Night extends BroadcastReceiver {
         return "\u20b9" + java.text.NumberFormat.getInstance(new Locale("en", "IN")).format(Math.abs(n));
     }
 
-    static long pendingToday(Context c, String today) {
-        long s = 0;
-        try {
-            JSONArray arr = new JSONArray(DayLeftPlugin.prefs(c).getString("pending", "[]"));
-            for (int i = 0; i < arr.length(); i++) {
-                JSONObject o = arr.getJSONObject(i);
-                if (today.equals(o.optString("d"))) s += o.optLong("a");
-            }
-        } catch (Exception ignored) {
-        }
-        return s;
-    }
-
     static String tomorrowBills(Context c) {
         try {
             Calendar t = Calendar.getInstance();
@@ -80,7 +67,6 @@ public class Night extends BroadcastReceiver {
         long daily = p.getInt("daily", 0);
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
         long spent = today.equals(p.getString("date", "")) ? p.getInt("spent", 0) : 0;
-        spent += pendingToday(c, today);
         schedule(c);
         if (daily <= 0) return;
         long left = daily - spent;
