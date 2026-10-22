@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://abu-1221.github.io/dayleft/sitemap.xml

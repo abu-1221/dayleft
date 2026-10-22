@@ -54,6 +54,24 @@ public class Night extends BroadcastReceiver {
         return s;
     }
 
+    static String tomorrowBills(Context c) {
+        try {
+            Calendar t = Calendar.getInstance();
+            t.add(Calendar.DAY_OF_YEAR, 1);
+            int dom = t.get(Calendar.DAY_OF_MONTH), last = t.getActualMaximum(Calendar.DAY_OF_MONTH);
+            JSONArray arr = new JSONArray(DayLeftPlugin.prefs(c).getString("bills", "[]"));
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject o = arr.getJSONObject(i);
+                int d = Math.min(o.optInt("d"), last);
+                if (d == dom) sb.append(sb.length() == 0 ? " Due tomorrow: " : ", ").append(o.optString("n")).append(" ").append(money(o.optLong("a")));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
     @Override
     public void onReceive(Context c, Intent in) {
         String act = in == null ? null : in.getAction();
@@ -67,7 +85,8 @@ public class Night extends BroadcastReceiver {
         if (daily <= 0) return;
         long left = daily - spent;
         String title = left >= 0 ? "Left today: " + money(left) : "Over budget by " + money(left);
-        String body = "Spent " + money(spent) + " of " + money(daily) + ". Open DayLeft to add the rest.";
+        String bills = tomorrowBills(c);
+        String body = "Spent " + money(spent) + " of " + money(daily) + ". Open DayLeft to add the rest." + bills;
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= 26) nm.createNotificationChannel(new NotificationChannel("night", "Night summary", NotificationManager.IMPORTANCE_DEFAULT));
         PendingIntent open = PendingIntent.getActivity(c, 8, new Intent(c, MainActivity.class), PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);

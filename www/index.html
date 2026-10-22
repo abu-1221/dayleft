@@ -1,98 +1,59 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#0f766e"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png">
-<title>DayLeft</title><style>
-:root{--bg:#f3f6f5;--card:#fff;--tx:#14201b;--mu:#667770;--ac:#0f766e;--bad:#c2410c;--ln:#e2e8e5}
-body.dark{--bg:#0e1411;--card:#18211d;--tx:#e8f0ec;--mu:#8da197;--ac:#0f766e;--bad:#fb923c;--ln:#25322c}
-*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-html,body{overscroll-behavior:none}
-body{font:15px system-ui,sans-serif;background:var(--bg);color:var(--tx);max-width:520px;margin:auto;min-height:100vh;padding:env(safe-area-inset-top) 0 calc(70px + env(safe-area-inset-bottom));overflow-x:hidden}
-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px}
-h1{font-size:19px}button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
-.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;margin:0 16px 12px;padding:14px;overflow:hidden}
-.big{font-size:38px;font-weight:700;word-break:break-all}.mu{color:var(--mu);font-size:13px}.bad{color:var(--bad)}
-.bar{height:10px;background:var(--ln);border-radius:9px;overflow:hidden;margin:10px 0 6px}.bar i{display:block;height:100%;background:var(--ac)}
-.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--ln)}.row:first-of-type{border-top:0}
-.row>div:first-child{min-width:0;overflow-wrap:anywhere}.row b{white-space:nowrap}
-.tag{display:inline-block;font-size:11px;background:var(--ac);color:#fff;border-radius:6px;padding:1px 6px;margin-left:4px}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.chip{padding:8px 12px;border-radius:20px;border:1px solid var(--ln);font-size:13px}.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
-input{width:100%;font:inherit;color:inherit;background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:12px;margin:6px 0}
-label{display:block;font-weight:600;margin-top:8px}
-.cta{display:block;width:100%;background:var(--ac);color:#fff;border-radius:12px;padding:13px;font-weight:600;margin-top:8px;text-align:center}
-.cta.alt{background:#475f57}
-nav{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:auto;display:flex;background:var(--card);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom)}
-nav button{flex:1;padding:14px 0;color:var(--mu);font-size:13px}nav button.on{color:var(--ac);font-weight:700}body.dark nav button.on{color:#2dd4bf}
-.cat{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px}.cat span:first-child{width:72px}.cat .bar{flex:1;margin:0;height:8px}.cat span:last-child{width:64px;text-align:right}
-.x{color:var(--mu);padding:6px 10px;font-size:16px}
-#toast{position:fixed;left:16px;right:16px;bottom:84px;max-width:488px;margin:auto;background:#14201b;color:#fff;border-radius:12px;padding:12px 14px;display:none;justify-content:space-between;align-items:center}
-#toast button{color:#5eead4;font-weight:700}
-.hide{display:none}
-</style></head><body><header><h1 id=ttl>DayLeft</h1><button id=th>Dark</button></header><main id=m></main>
-<nav id=nv><button data-t=today>Today</button><button data-t=add>Add</button><button data-t=month>Month</button><button data-t=set>Settings</button></nav>
-<div id=toast><span id=tm></span><button id=tu>Undo</button></div>
-<script>
-const CATS=['Food','Travel','Bills','Shopping','Health','Other'];
-const K='dayleft1',P=new URLSearchParams(location.search);
-const NP=(window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.DayLeft)||null;
-let S=JSON.parse(localStorage.getItem(K)||'null')||{setup:false,income:0,fixed:0,tx:[],dark:false};
-const save=()=>{localStorage.setItem(K,JSON.stringify(S));sync()};
-const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-const td=()=>ymd(new Date());
-const daily=()=>Math.max(0,Math.round((S.income-S.fixed)/30));
-const inr=n=>(n<0?'-':'')+'₹'+Math.abs(Math.round(n)).toLocaleString('en-IN');
-const tot=d=>S.tx.filter(x=>x.d==d).reduce((s,x)=>s+x.a,0);
-function sync(){if(NP&&S.setup)NP.setSummary({daily:daily(),spent:tot(td()),date:td()}).catch(()=>{})}
-if(P.has('demo')&&!S.setup){S={setup:true,income:60000,fixed:15000,dark:false,tx:[]};
- const r=[['Tea',20,0],['Auto',60,1],['Lunch',140,0],['Recharge',299,2],['Snacks',80,0],['Medicine',120,4]];
- r.forEach(([n,a,c],i)=>S.tx.push({id:i,n,a,c:CATS[c],d:td(),t:String(8+i).padStart(2,'0')+':15'}));
- [['Groceries',900,0],['Shirt',1200,3],['Petrol',500,1],['Dinner',450,0],['Bus pass',350,1],['Mess',1100,0],['Phone bill',399,2]].forEach(([n,a,c],i)=>{const d=new Date();d.setDate(d.getDate()-1-i);S.tx.push({id:20+i,n,a,c:CATS[c],d:ymd(d),t:'20:00'})})}
-let tab=S.setup?(P.get('tab')||'today'):'setup',cat='Food',last=null;
-function toast(msg,undo){tm.textContent=msg;toast_.style.display='flex';clearTimeout(toast_.t);toast_.t=setTimeout(()=>toast_.style.display='none',4000);tu.style.display=undo?'':'none';tu.onclick=()=>{undo();toast_.style.display='none'}}
-const toast_=document.getElementById('toast');
-function view(){let h='';nv.classList.toggle('hide',tab=='setup');
-if(tab=='setup'){h=`<div class=card><b style="font-size:18px">Set up your budget</b><div class=mu style="margin:4px 0 8px">Stays on this phone. Nothing is sent anywhere.</div>
-<label>Monthly income (₹)</label><input id=inc type=number inputmode=numeric placeholder="e.g. 30000">
-<label>Fixed bills each month (₹)</label><input id=fx type=number inputmode=numeric placeholder="rent, EMI, recharge (0 if none)">
-<div class=mu id=pv style="margin-top:6px"></div><button class=cta onclick=finish()>Start</button></div>`}
-if(tab=='today'){const sp=tot(td()),left=daily()-sp,p=daily()?Math.min(100,sp/daily()*100):100;
-h=`<div class=card><div class=mu>Left today</div><div class="big ${left<0?'bad':''}">${inr(left)}</div>
-<div class=bar><i style="width:${p}%;${left<0?'background:var(--bad)':''}"></i></div><div class=mu>Spent ${inr(sp)} of ${inr(daily())}</div></div>
-<div class=card><b>Today</b>${S.tx.filter(x=>x.d==td()).reverse().map(x=>`<div class=row><div>${esc(x.n)}${x.src?'<span class=tag>SMS</span>':''}<div class=mu>${x.c} · ${x.t}</div></div><div><b>${inr(x.a)}</b><button class=x onclick="del(${x.id})" aria-label=Delete>✕</button></div></div>`).join('')||'<div class=mu style="padding-top:8px">Nothing yet. Tap Add.</div>'}</div>`}
-if(tab=='add'){h=`<div class=card><b>Add expense</b><input id=a type=number inputmode=numeric placeholder="Amount ₹"><input id=n placeholder="Note (optional)">
-<div class=chips>${CATS.map(c=>`<button class="chip ${c==cat?'on':''}" onclick="pick('${c}')">${c}</button>`).join('')}</div><button class=cta onclick=add()>Save</button></div>
-<div class=card><b>Paste a UPI / bank SMS</b><div class=mu>Reads the amount on this phone only</div><input id=sms placeholder="Rs.250.00 debited ... to SWIGGY"><button class="cta alt" onclick=sms()>Read amount</button></div>`}
-if(tab=='month'){const dd=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return ymd(d)});const mx=Math.max(1,daily(),...dd.map(tot));
-const ms=td().slice(0,7),mt=S.tx.filter(x=>x.d.startsWith(ms)),cs=CATS.map(c=>[c,mt.filter(x=>x.c==c).reduce((s,x)=>s+x.a,0)]),cm=Math.max(1,...cs.map(x=>x[1])),spent=mt.reduce((s,x)=>s+x.a,0);
-const bud=daily()*new Date().getDate(),ly=90-daily()/mx*80;
-h=`<div class=card><div class=mu>This month so far</div><div class=big>${inr(spent)}</div><div class=mu>${spent<=bud?'Under':'Over'} budget by ${inr(Math.abs(bud-spent))} (${inr(bud)} allowed till today)</div></div>
-<div class=card><b>Last 7 days</b><svg viewBox="0 0 280 110" width=100% style="margin-top:8px">${dd.map((d,i)=>{const v=tot(d),hh=v/mx*80;return `<rect x="${i*40+6}" y="${90-hh}" width=28 height="${hh}" rx=4 fill="${v>daily()?'var(--bad)':'var(--ac)'}"/><text x="${i*40+20}" y=105 font-size=10 text-anchor=middle fill="var(--mu)">${d.slice(8)}</text>`}).join('')}<line x1=0 x2=280 y1="${ly}" y2="${ly}" stroke="var(--mu)" stroke-dasharray="3"/></svg><div class=mu>Dashed line = daily budget</div></div>
-<div class=card><b>By category</b>${cs.map(([c,v])=>`<div class=cat><span>${c}</span><div class=bar><i style="width:${v/cm*100}%"></i></div><span>${inr(v)}</span></div>`).join('')}</div>`}
-if(tab=='set'){h=`<div class=card><label style="margin-top:0">Monthly income (₹)</label><input id=inc type=number inputmode=numeric value=${S.income}><label>Fixed bills (₹)</label><input id=fx type=number inputmode=numeric value=${S.fixed}>
-<div class=mu>Daily budget = (income − fixed) ÷ 30 = ${inr(daily())}</div><button class=cta onclick=ss()>Save</button></div>
-<div class=card><b>Night summary</b><div class=mu id=nm>${NP?'Every night at 9:30 PM: how much you spent and what is left.':'Night notification works in the Android app. This web version cannot send it.'}</div>${NP?'<button class=cta onclick=perm()>Allow notifications + SMS reading</button><div class=mu id=ps style="margin-top:6px"></div>':''}</div>
-<div class=card><button class=cta onclick=exp()>Export backup (.json)</button><label for=imp class=cta alt style="background:#475f57">Import backup</label><input id=imp type=file accept=".json" class=hide onchange=imp(this)></div>
-<div class=card><button class="cta" style="background:#b91c1c" onclick=reset()>Erase all data</button></div>`}
-m.innerHTML=h;document.querySelectorAll('#nv button').forEach(b=>b.classList.toggle('on',b.dataset.t==tab));
-if(tab=='setup'){const u=()=>{const v=((+inc.value||0)-(+fx.value||0))/30;pv.textContent=inc.value?'Daily budget: '+inr(Math.max(0,v)):''};inc.oninput=fx.oninput=u}
-if(tab=='add')setTimeout(()=>{const e=document.getElementById('a');e&&e.focus()},50);
-if(tab=='set'&&NP)NP.checkPerms().then(r=>{const e=document.getElementById('ps');if(e)e.textContent='SMS: '+r.sms+' · Notifications: '+r.notifications}).catch(()=>{})}
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function pick(c){cat=c;const a=document.getElementById('a').value,n=document.getElementById('n').value;view();document.getElementById('a').value=a;document.getElementById('n').value=n}
-function finish(){const i=+inc.value;if(!(i>0)){inc.focus();return}S.income=i;S.fixed=+fx.value||0;S.setup=true;save();tab='today';view();toast('Daily budget '+inr(daily()))}
-function add(){const a=Math.round(+document.getElementById('a').value);if(!(a>0)){document.getElementById('a').focus();return}const d=new Date();const x={id:Date.now(),n:document.getElementById('n').value.trim()||cat,a,c:cat,d:td(),t:String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};S.tx.push(x);save();tab='today';view()}
-function sms(){const r=parseSms(document.getElementById('sms').value);if(r)document.getElementById('a').value=r.a;if(r&&r.n)document.getElementById('n').value=r.n}
-function parseSms(t){const m=/(?:rs\.?|inr|₹)\s*([\d,]+(?:\.\d+)?)/i.exec(t);if(!m)return null;const w=/\b(?:to|at)\s+([A-Za-z][A-Za-z0-9 &._@-]{1,22}?)(?:\s+(?:via|on|ref|upi|using|from)\b|[.,;]|$)/i.exec(t);return{a:Math.round(m[1].replace(/,/g,'')),n:w?w[1].trim():''}}
-function del(id){const x=S.tx.find(y=>y.id==id);S.tx=S.tx.filter(y=>y.id!=id);save();view();toast('Deleted '+inr(x.a),()=>{S.tx.push(x);save();view()})}
-function ss(){const i=+inc.value;if(!(i>0))return;S.income=i;S.fixed=+fx.value||0;save();tab='today';view()}
-function exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='dayleft-backup.json';a.click()}
-function imp(i){const f=i.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!Array.isArray(o.tx))throw 0;S=o;save();tab='today';view();toast('Backup restored')}catch(e){toast('Not a valid backup')}})}
-function reset(){if(confirm('Erase all data on this phone?')){S={setup:false,income:0,fixed:0,tx:[],dark:S.dark};save();tab='setup';view()}}
-function perm(){NP.requestPerms().then(()=>view()).catch(()=>{})}
-function pull(){if(!NP||!S.setup)return;NP.getPending().then(r=>{let n=0;(r.items||[]).forEach(p=>{S.tx.push({id:Date.now()+n++,n:p.n||'UPI debit',a:p.a,c:'Other',d:p.d,t:p.t,src:1})});if(n){save();view();toast(n+' payment'+(n>1?'s':'')+' added from SMS')}}).catch(()=>{})}
-document.querySelectorAll('#nv button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;view()});
-const sd=()=>{document.body.classList.toggle('dark',!!S.dark);th.textContent=S.dark?'Light':'Dark'};
-th.onclick=()=>{S.dark=!S.dark;localStorage.setItem(K,JSON.stringify(S));sd()};
-if(P.has('dark'))S.dark=true;sd();view();sync();pull();document.addEventListener('visibilitychange',()=>{if(!document.hidden){pull();if(tab=='today')view()}});
-if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js');
-</script></body></html>
+<title>DayLeft - Free Daily Budget Tracker for India (Offline, No Ads)</title>
+<meta name="description" content="DayLeft turns your monthly income into a daily budget. Track UPI spends, set category limits, recurring bills and savings goals. Free, offline, private. Web app and Android APK.">
+<meta name="keywords" content="daily budget app, expense tracker India, UPI expense tracker, budget planner, offline expense tracker, free budget app">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="author" content="Abu Backer Siddique">
+<meta name="theme-color" content="#0f766e">
+<meta name="color-scheme" content="light dark">
+<meta name="referrer" content="no-referrer">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DayLeft">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="canonical" href="https://abu-1221.github.io/dayleft/">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DayLeft">
+<meta property="og:title" content="DayLeft - Free Daily Budget Tracker">
+<meta property="og:description" content="Monthly income divided into a daily budget. UPI SMS tracking, category limits, bills, savings goals. Free and private.">
+<meta property="og:url" content="https://abu-1221.github.io/dayleft/">
+<meta property="og:image" content="https://abu-1221.github.io/dayleft/og-image.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="DayLeft app showing money left today">
+<meta property="og:locale" content="en_IN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DayLeft - Free Daily Budget Tracker">
+<meta name="twitter:description" content="Know what is left to spend today. Free, offline, private.">
+<meta name="twitter:image" content="https://abu-1221.github.io/dayleft/og-image.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"DayLeft","applicationCategory":"FinanceApplication","operatingSystem":"Android, Web","description":"Daily budget tracker with UPI SMS tracking, category limits, recurring bills and savings goals. Works offline.","url":"https://abu-1221.github.io/dayleft/","downloadUrl":"https://github.com/abu-1221/dayleft/releases/latest","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"author":{"@type":"Person","name":"Abu Backer Siddique"},"inLanguage":"en-IN"}</script>
+</head>
+<body>
+<header><h1 id="ttl">DayLeft</h1><button id="th" type="button">Dark</button></header>
+<main id="m">
+<section class="card" id="boot">
+<h2>DayLeft - daily budget tracker</h2>
+<p>Turn your monthly income into a daily budget. Add your spends, see what is left today, and stay on track with category limits, recurring bills and savings goals.</p>
+<ul>
+<li>Works offline and keeps data on your device</li>
+<li>Android app reads UPI and bank debit SMS on the phone and adds them for you</li>
+<li>9:30 PM night summary, Excel export, month insights</li>
+<li>Free. No ads, no accounts, no tracking</li>
+</ul>
+<noscript><p>Please turn on JavaScript to use DayLeft.</p></noscript>
+</section>
+</main>
+<nav id="nv" aria-label="Main"><button type="button" data-v="today">Today</button><button type="button" data-v="history">History</button><button type="button" data-v="add">Add</button><button type="button" data-v="insights">Insights</button><button type="button" data-v="more">More</button></nav>
+<div id="toast" role="status" aria-live="polite"><span id="tm"></span><button id="tu" type="button">Undo</button></div>
+<script src="xlsx.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
